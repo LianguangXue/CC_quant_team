@@ -1,0 +1,17 @@
+{
+  "name": "cc-quant-team",
+  "owner": {
+    "name": "LianguangXue"
+  },
+  "metadata": {
+    "description": "Multi-agent quantitative team orchestration for Claude Code. Quant-specialized fork of CCteam-creator.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "cc-quant-team",
+      "source": "./",
+      "description": "Multi-agent quantitative research and trading team creator"
+    }
+  ]
+}
