@@ -61,9 +61,44 @@ Whenever your context is compacted, you **must** first read, in order:
 
 Before modifying or reporting on any file from a prior session: verify current state. `wc -l <file>` / `Grep pattern="<func>" path="<file>"` / `git log --oneline -5 <file>`. Other agents may have edited it. Do not cite recalled line numbers.
 
+### Progress Tracking (MANDATORY — Non-Negotiable)
+
+**You MUST break every task into small steps and log each step's completion to progress.md IMMEDIATELY after finishing it.** Do NOT wait until the whole task is done. progress.md is how team-lead and other agents know what you did, what worked, and what's left.
+
+**Rule: After completing ANY sub-step (a function written, a file created, a test run, a profile taken, a schema updated), append a progress entry BEFORE moving to the next sub-step.**
+
+Format:
+```
+## <date> — <task-name>
+
+### Step 1: <description>
+- Status: done
+- What I did: <concrete action, not vague summary>
+- Output: <file path / test result / benchmark number>
+- Duration: <rough time>
+
+### Step 2: <description>
+- Status: done
+- What I did: ...
+
+### Step 3: <description>
+- Status: in_progress
+- What I did so far: ...
+- Next: <what remains>
+```
+
+**Anti-patterns (will be flagged by team-lead)**:
+- ❌ Empty progress.md at end of task
+- ❌ Single entry "Completed task X" with no sub-steps
+- ❌ Updating progress.md only once at the very end
+- ❌ Vague entries like "worked on feature" without specifics
+
+**Why this matters**: team-lead reads progress.md to check status without interrupting you. If it's empty, team-lead cannot coordinate the team. Other agents reading your progress.md to pick up where you left off will have nothing to work with.
+
 ### Documentation Update Frequency
 
-- Complete a task → TaskUpdate + update progress.md
+- **After each sub-step** → append to progress.md (see above — this is the most important one)
+- Complete a full task → TaskUpdate(status: "completed") + final progress.md entry with summary
 - Discover a technical issue or pitfall → immediately write to findings.md
 - Design decision deviates from original plan → record in findings.md + notify team-lead
 - **Schema change** → update `docs/data-schemas.md` (or `docs/strategy-contracts.md`) in the same task — undocumented schemas do not exist for other agents
@@ -99,11 +134,22 @@ Main plan: `.plans/<project>/task_plan.md` (read-only for you; maintained by tea
 
 **Bidirectional communication is the default.** File system handles persistence; messages handle alignment. team-lead is the **control plane**: escalations, phase changes, scope changes route through it.
 
-### Receive task → confirm before starting
+### Receive task → decompose → confirm before starting
 
-For any new task from team-lead, your first reply is a one-line acknowledgement: (1) your understanding of the goal, (2) your planned first action. Only then start work. For large tasks, additionally list 2-3 key decision points and wait for confirmation before coding.
+For any new task from team-lead:
+
+1. **Decompose the task into small sub-steps** (5-15 minute chunks). Write them as a checklist in your task folder's task_plan.md:
+   ```
+   - [ ] Step 1: <concrete action>
+   - [ ] Step 2: <concrete action>
+   - [ ] Step 3: <concrete action>
+   ```
+2. **Reply with acknowledgement**: (1) your understanding of the goal, (2) the sub-step list, (3) your planned first action
+3. **Wait for confirmation** on large tasks before coding. For small tasks, proceed after sending the acknowledgement
 
 **If the message bundles multiple deliverables**, your acknowledgement MUST enumerate every part: "Task has N items: (1) X, (2) Y, (3) Z." Execute in order, report completion per-item.
+
+**As you complete each sub-step**, check it off in task_plan.md AND append a progress entry to progress.md. These two actions are a single atomic unit — do not skip the progress.md entry.
 
 ### Completion report → bring evidence
 
