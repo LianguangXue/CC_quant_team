@@ -550,23 +550,80 @@ The team-lead is responsible for:
 team-lead writes to the project root. If team-lead doesn't write, there is no project-level
 record — only scattered agent files with no coherent picture.
 
-**When to update which file:**
+**Team-lead owns 5 root-level files** (agents write to their own dirs; these are project-global):
 
-| Trigger | File to update | What to write |
-|---------|---------------|---------------|
-| **After dispatching a task** | `task_plan.md` §4 Task Summary | Add row: task# / description / owner / status=in_progress / plan-file path |
-| **After dispatching a task** | `progress.md` | Append: `Dispatched T<N> to <agent>: <one-line scope>` |
-| **After agent reports completion** | `task_plan.md` §4 | Update row: status=complete |
-| **After agent reports completion** | `progress.md` | Append: `T<N> completed by <agent>. Verdict: <OK/WARN/BLOCK>. Key result: <one line>` |
-| **After research-validator verdict** | `task_plan.md` §6 Gate Status | Add/update row |
-| **After risk-manager verdict** | `task_plan.md` §6 Gate Status | Add/update row |
-| **Phase boundary reached** | `task_plan.md` §5 Current Phase | Update phase status + what's next |
-| **Phase boundary reached** | `progress.md` | Append phase summary: what was accomplished, what gates passed, what carries forward |
-| **Architecture/pipeline decision** | `decisions.md` | New D<N> entry with rationale + alternatives |
-| **Team roster change** | `CLAUDE.md` §Team Roster | Update roster table |
-| **Team roster change** | `team-snapshot.md` | Regenerate with current prompts |
-| **New Known Pitfall** | `CLAUDE.md` §Known Pitfalls | Append KP entry |
-| **Session start (resume)** | `progress.md` | Append: `Session resumed. Reading agent status...` then a status summary after reading agents' files |
+| File | Purpose | Team-lead role |
+|------|---------|---------------|
+| `task_plan.md` | Navigation map: phases, task summary, gate status | Primary author. Update §4 / §5 / §6 on every dispatch / completion / phase change |
+| `progress.md` | Chronological log of what happened across the team | Append after every significant event (dispatch, completion, verdict, decision, phase) |
+| `findings.md` | Cross-team findings consolidation, tagged by source agent | Consolidate important findings from agents at milestones (see Milestone Consolidation below) |
+| `decisions.md` | Architecture / pipeline / tool-choice decisions with rationale | New D<N> entry for every non-trivial decision |
+| `team-snapshot.md` | Cached onboarding prompts + roster for fast resume | Regenerate when roster changes, at phase boundaries, or when skill source files update |
+
+**When to update — event-driven triggers:**
+
+| Trigger | task_plan.md | progress.md | findings.md | decisions.md | team-snapshot.md |
+|---------|:---:|:---:|:---:|:---:|:---:|
+| Dispatch a task | §4: add row | append | — | — | — |
+| Agent reports completion | §4: mark done | append with verdict | — | — | — |
+| Validator verdict | §6: gate status | append | — | — | — |
+| Architecture decision | — | append | — | new D<N> | — |
+| Phase boundary | §5: phase status | phase summary | **consolidate** (see below) | — | check staleness |
+| Roster change | — | append | — | — | **regenerate** |
+| New Known Pitfall | — | append | — | — | — |
+| Session resume | — | status summary | — | — | check staleness |
+| User requests status | — | — | — | — | — |
+| **Milestone reached** | — | append | **consolidate** (see below) | if applicable | — |
+
+### Milestone Consolidation (findings.md + docs/)
+
+**At phase boundaries or whenever significant work completes** (a feature family validated, a model finalized, a strategy backtested), team-lead must consolidate:
+
+**Step 1 — Consolidate findings.md**: Read each agent's relevant task-folder findings.md. Extract the **key results, metrics, and conclusions** that matter at the project level. Write a consolidated entry to the main `.plans/<project>/findings.md`:
+
+```
+## [MILESTONE] <date> — Phase 2 Feature Research Complete
+
+### Source: team-lead (consolidated from agent findings)
+
+**Features Delivered:**
+- Orderflow imbalance family (hft-researcher-orderflow): IC=0.04, rank-IC=0.05, coverage=95%
+  - Full report: hft-researcher-orderflow/research-orderflow-imbalance/findings.md
+  - Research-validator verdict: [OK] (2026-04-15)
+- Momentum factor (lft-researcher): IC=0.03, turnover=0.8, coverage=92%
+  - Full report: lft-researcher/research-momentum-factor/findings.md
+  - Research-validator verdict: [OK] (2026-04-16)
+
+**Key Technical Decisions:**
+- Used Ts (local receive time) not ExchangeTs for all features (INV-T4 compliant)
+- OrgData schema frozen as of 2026-04-10 — no further changes until Phase 4
+
+**Blocked / Deferred:**
+- Queue position features deferred to Phase 4 (needs StockBook L3 data not yet available)
+
+**Metrics Summary:**
+| Feature | IC | Rank-IC | Turnover | Coverage | Validator |
+|---------|-----|---------|----------|----------|-----------|
+| orderflow_imbalance | 0.04 | 0.05 | 0.6 | 0.95 | [OK] |
+| momentum_60d | 0.03 | 0.04 | 0.8 | 0.92 | [OK] |
+```
+
+**Step 2 — Update docs/ when milestone reveals important details**: If the milestone produced knowledge that downstream agents need (schema details, interface specifics, performance characteristics, capacity numbers), **create or update the relevant docs/ file** with those details:
+
+| What was learned | Where to put it |
+|-----------------|-----------------|
+| Feature schema details (columns, dtypes, lookback, NaN handling) | `docs/data-schemas.md` §Features |
+| Pipeline latency / throughput numbers from data-engineer | `docs/pipeline-flow.md` §Latency Budgets |
+| Model training results + signal output format | `docs/data-schemas.md` §Models + §Signals |
+| Strategy backtest metrics + execution model | `docs/strategy-contracts.md` |
+| Capacity / risk limits from risk-manager | `docs/strategy-contracts.md` §Risk Limits |
+| Newly discovered invariant | `docs/invariants.md` |
+
+**This is NOT copying agent findings verbatim.** Team-lead reads agent findings, extracts the durable knowledge (schemas, metrics, interfaces, constraints), and writes it to the appropriate docs/ file in a structured format that future agents can consume.
+
+**Step 3 — Update docs/index.md**: If any docs/ file was created or significantly changed, update `docs/index.md` with the new section names and line ranges.
+
+**Why this matters**: Agent task-folder findings are detailed but scattered. Without consolidation, the next phase's agents (e.g., model-researcher starting Phase 3) must read 5 different agent directories to understand what features exist. Consolidated findings.md + updated docs/ give them one place to look.
 
 **Format for team-lead progress.md entries:**
 ```
@@ -587,6 +644,11 @@ record — only scattered agent files with no coherent picture.
 ### Decisions
 - D4: Use LightGBM over LSTM for alpha-v1 (see decisions.md)
 
+### Milestone Consolidation
+- Wrote [MILESTONE] Phase 2 summary to findings.md
+- Updated docs/data-schemas.md §Features with orderflow + momentum schemas
+- Updated docs/index.md line ranges
+
 ### Phase Status
 - Phase 2 (Feature Research): 3/5 feature families complete, 2 in progress
 - Next milestone: all features research-validator [OK] before Phase 3
@@ -600,7 +662,10 @@ record — only scattered agent files with no coherent picture.
 1. Is `task_plan.md` §4 Task Summary current? (no stale in_progress rows for finished tasks)
 2. Is `task_plan.md` §6 Gate Status current?
 3. Did I log the last dispatch/completion in `progress.md`?
-4. Does `CLAUDE.md` still reflect actual roster and protocols?
+4. Is `findings.md` up to date? (any agent completions since last consolidation?)
+5. Are `docs/` files current with the latest schemas/interfaces/metrics?
+6. Does `CLAUDE.md` still reflect actual roster and protocols?
+7. Is `team-snapshot.md` stale? (roster changed since last generation?)
 
 If any answer is "no" — update the file NOW before doing anything else.
 

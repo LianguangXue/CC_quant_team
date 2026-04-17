@@ -33,19 +33,26 @@ Generated in the **project working directory** (not inside `.plans/`). Claude Co
 
 ### Team-Lead Bookkeeping (MANDATORY — survives compaction via this CLAUDE.md)
 
-**Team-lead MUST update project-level files after every significant event.** Without this, there is no project-level record.
+**Team-lead owns 5 root files: task_plan.md / progress.md / findings.md / decisions.md / team-snapshot.md.** Agents write to their own dirs; without team-lead writing to root, no project-level record exists.
 
-| Event | Update task_plan.md | Update progress.md | Other |
-|-------|:---:|:---:|-------|
-| Dispatch a task | §4: add row (task/owner/status) | Append dispatch entry | — |
-| Agent reports completion | §4: mark complete | Append completion + verdict | — |
-| Validator verdict received | §6: update gate status | Append gate update | — |
-| Phase boundary | §5: update phase | Append phase summary | Health check first |
-| Architecture decision | — | Append decision note | decisions.md: new D<N> |
-| Roster change | — | Append change note | This CLAUDE.md §Roster + team-snapshot.md |
-| Session resume | — | Append "Session resumed" + status summary | — |
+| Event | task_plan.md | progress.md | findings.md | decisions.md | team-snapshot.md |
+|-------|:---:|:---:|:---:|:---:|:---:|
+| Dispatch a task | §4: add row | append | — | — | — |
+| Agent completes | §4: mark done | append + verdict | — | — | — |
+| Validator verdict | §6: gate status | append | — | — | — |
+| Architecture decision | — | append | — | new D<N> | — |
+| **Phase boundary / Milestone** | §5: phase status | phase summary | **consolidate** | if applicable | check staleness |
+| Roster change | — | append | — | — | **regenerate** |
+| Session resume | — | status summary | — | — | check staleness |
 
-**Self-check (every ~5 interactions):** Is task_plan.md §4+§5+§6 current? Did I log last dispatch/completion in progress.md? If no → update NOW before next action.
+**Milestone Consolidation** (at phase boundaries or significant completions):
+1. Read agent task-folder findings → extract key results, metrics, conclusions → write consolidated `[MILESTONE]` entry to root `findings.md`
+2. Extract durable knowledge (schemas, metrics, interfaces, capacity numbers) → create or update the relevant `docs/` file (data-schemas.md / pipeline-flow.md / strategy-contracts.md / invariants.md)
+3. Update `docs/index.md` if any docs/ file changed
+
+This is NOT copying verbatim — team-lead synthesizes scattered agent findings into structured docs/ knowledge that downstream agents can consume from one place.
+
+**Self-check (every ~5 interactions):** task_plan.md §4+§5+§6 current? progress.md has last dispatch/completion? findings.md consolidated since last agent completion? docs/ up to date? team-snapshot.md fresh? If no → update NOW.
 
 ## Team Roster
 
