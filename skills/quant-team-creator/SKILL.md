@@ -544,6 +544,66 @@ The team-lead is responsible for:
 - capturing user taste preferences in Style Decisions
 - deciding whether a workflow change is project-local or should be written back into `CC_quant_team`
 
+### Team-Lead Bookkeeping Protocol (MANDATORY)
+
+**Team-lead MUST keep project-level files current.** Agents write to their own dirs;
+team-lead writes to the project root. If team-lead doesn't write, there is no project-level
+record — only scattered agent files with no coherent picture.
+
+**When to update which file:**
+
+| Trigger | File to update | What to write |
+|---------|---------------|---------------|
+| **After dispatching a task** | `task_plan.md` §4 Task Summary | Add row: task# / description / owner / status=in_progress / plan-file path |
+| **After dispatching a task** | `progress.md` | Append: `Dispatched T<N> to <agent>: <one-line scope>` |
+| **After agent reports completion** | `task_plan.md` §4 | Update row: status=complete |
+| **After agent reports completion** | `progress.md` | Append: `T<N> completed by <agent>. Verdict: <OK/WARN/BLOCK>. Key result: <one line>` |
+| **After research-validator verdict** | `task_plan.md` §6 Gate Status | Add/update row |
+| **After risk-manager verdict** | `task_plan.md` §6 Gate Status | Add/update row |
+| **Phase boundary reached** | `task_plan.md` §5 Current Phase | Update phase status + what's next |
+| **Phase boundary reached** | `progress.md` | Append phase summary: what was accomplished, what gates passed, what carries forward |
+| **Architecture/pipeline decision** | `decisions.md` | New D<N> entry with rationale + alternatives |
+| **Team roster change** | `CLAUDE.md` §Team Roster | Update roster table |
+| **Team roster change** | `team-snapshot.md` | Regenerate with current prompts |
+| **New Known Pitfall** | `CLAUDE.md` §Known Pitfalls | Append KP entry |
+| **Session start (resume)** | `progress.md` | Append: `Session resumed. Reading agent status...` then a status summary after reading agents' files |
+
+**Format for team-lead progress.md entries:**
+```
+## <date> — <session title or phase>
+
+### Dispatched
+- T5 → hft-researcher-orderflow: orderflow imbalance feature family
+- T6 → data-engineer: validate OrgData for 2023H1
+
+### Completed
+- T3 (algorithm-engineer): orderbook reconstruction optimized 18.9× — code-validator [OK]
+- T4 (lft-researcher): momentum factor — research-validator [CONCERN], needs regime test
+
+### Gate Updates
+- research-validator: orderflow-imbalance → [OK]
+- risk-manager: momentum-v2 → [RISK-WARN] (capacity concerns at >$30M)
+
+### Decisions
+- D4: Use LightGBM over LSTM for alpha-v1 (see decisions.md)
+
+### Phase Status
+- Phase 2 (Feature Research): 3/5 feature families complete, 2 in progress
+- Next milestone: all features research-validator [OK] before Phase 3
+
+### Next Actions
+- Wait for hft-researcher-orderflow T5 completion
+- Dispatch momentum regime-test to lft-researcher after T4 fix
+```
+
+**Self-check (every ~5 interactions with agents or user):**
+1. Is `task_plan.md` §4 Task Summary current? (no stale in_progress rows for finished tasks)
+2. Is `task_plan.md` §6 Gate Status current?
+3. Did I log the last dispatch/completion in `progress.md`?
+4. Does `CLAUDE.md` still reflect actual roster and protocols?
+
+If any answer is "no" — update the file NOW before doing anything else.
+
 ### Handling Agent 3-Strike Escalations
 
 When an agent reports "3 failures, escalating to team-lead":
@@ -557,16 +617,42 @@ When an agent reports "3 failures, escalating to team-lead":
 
 ### Phase Advancement Cadence
 
-- **Data phase complete** → Read data-engineer findings → confirm `docs/data-schemas.md` current → advance to research
-- **Research phase complete** → Read research-validator findings → confirm all research outputs `[OK]` → advance to modeling
-- **Modeling phase complete** → Read model-researcher findings → confirm artifacts versioned → advance to strategy
-- **Strategy phase complete** → Read strategy-researcher findings → dispatch to risk-manager
-- **Risk review complete** → Read risk-manager verdict → if `[RISK-OK]`, advance to live; if `[RISK-BLOCK]`, back to strategy
-- **All done** → Read each agent's progress.md in parallel, confirm all tasks marked complete
+Each phase advancement has 3 mandatory steps: **READ → WRITE → ADVANCE**.
 
-**Phase boundary health check**:
+- **Data phase complete**:
+  1. Read data-engineer findings
+  2. Confirm `docs/data-schemas.md` current
+  3. **Write** to task_plan.md (§5: update phase status) + progress.md (phase summary) + task_plan.md §4 (mark data tasks complete)
+  4. Advance to research
+
+- **Research phase complete**:
+  1. Read research-validator findings → confirm all outputs `[OK]`
+  2. **Write** to task_plan.md (§5 + §6 gate status) + progress.md (which features approved, which blocked)
+  3. Advance to modeling
+
+- **Modeling phase complete**:
+  1. Read model-researcher findings → confirm artifacts versioned
+  2. **Write** to task_plan.md (§5 + §6) + progress.md (model metrics summary, artifact paths)
+  3. Advance to strategy
+
+- **Strategy phase complete**:
+  1. Read strategy-researcher findings
+  2. **Write** to task_plan.md (§5) + progress.md (backtest metrics summary)
+  3. Dispatch to risk-manager
+
+- **Risk review complete**:
+  1. Read risk-manager verdict
+  2. **Write** to task_plan.md (§6 gate status) + progress.md (verdict + conditions)
+  3. If `[RISK-OK]` → advance to live; if `[RISK-BLOCK]` → back to strategy
+
+- **All done**:
+  1. Read each agent's progress.md in parallel, confirm all tasks marked complete
+  2. **Write** final summary to progress.md + update task_plan.md §5 to COMPLETE
+
+**Phase boundary health check** (do this BEFORE writing phase-advance entries):
 - Are all agent root findings.md indexes up to date?
-- Are there stale `in_progress` tasks in TaskList?
+- Are there stale `in_progress` tasks in TaskList? → update task_plan.md §4
 - Does main task_plan.md phase status match actual progress?
 - Is `docs/data-schemas.md` synced with code?
 - Have research-validator and risk-manager gates been exercised for every output that crossed the boundary?
+- Is `team-snapshot.md` still current? (if roster changed during this phase, regenerate)

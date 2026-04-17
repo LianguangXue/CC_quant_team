@@ -31,6 +31,22 @@ Generated in the **project working directory** (not inside `.plans/`). Claude Co
 - team-lead decides whether a workflow improvement is project-local or should be written back into `CC_quant_team`
 - **No standalone subagents**: Once the team exists, ALL work goes through teammates via SendMessage. Only exception: spawning a new teammate (with `team_name`) to join the team
 
+### Team-Lead Bookkeeping (MANDATORY — survives compaction via this CLAUDE.md)
+
+**Team-lead MUST update project-level files after every significant event.** Without this, there is no project-level record.
+
+| Event | Update task_plan.md | Update progress.md | Other |
+|-------|:---:|:---:|-------|
+| Dispatch a task | §4: add row (task/owner/status) | Append dispatch entry | — |
+| Agent reports completion | §4: mark complete | Append completion + verdict | — |
+| Validator verdict received | §6: update gate status | Append gate update | — |
+| Phase boundary | §5: update phase | Append phase summary | Health check first |
+| Architecture decision | — | Append decision note | decisions.md: new D<N> |
+| Roster change | — | Append change note | This CLAUDE.md §Roster + team-snapshot.md |
+| Session resume | — | Append "Session resumed" + status summary | — |
+
+**Self-check (every ~5 interactions):** Is task_plan.md §4+§5+§6 current? Did I log last dispatch/completion in progress.md? If no → update NOW before next action.
+
 ## Team Roster
 
 | Name | Role | Model | Multi-instance | Key Capability |
@@ -238,6 +254,8 @@ Status values:
 
 | Protocol | Trigger | Action |
 |----------|---------|--------|
+| **Team-lead bookkeeping** | **After EVERY dispatch / completion / verdict / phase change** | **Update task_plan.md (§4 task summary + §5 phase + §6 gates) AND progress.md. See Bookkeeping table above. This is the #1 protocol — without it, no project-level record exists** |
+| **Team-lead self-check** | **Every ~5 interactions with agents or user** | **Check: is task_plan.md §4+§5+§6 current? Did I log last dispatch/completion? If stale → update NOW** |
 | Requirements alignment | After team setup, before development | Research phase starts; team-lead aligns with user on pipeline stages and success criteria. Update task_plan.md §1-§2 |
 | Plan stress-test | Before finalizing pipeline/strategy design | Delegate to researcher: "stress-test this plan, walk every decision branch" |
 | 3-Strike escalation | Agent reports 3 failures | Read their progress.md, give new direction or reassign |
@@ -245,7 +263,7 @@ Status values:
 | **Research-validator gate** | Researcher / model-researcher completes output | Research output blocked downstream until research-validator [OK]. Hard gate |
 | **Risk-manager gate** | Strategy-researcher completes strategy | Strategy blocked for live deployment until risk-manager [RISK-OK]. Hard gate |
 | **Reproducibility gate** | Model artifact saved | Every model saved with data range + feature hash + hyperparams + seed + git commit. No promotion to strategy without full metadata |
-| Phase advance | Phase complete | Data done: confirm schemas. Research done: confirm research-validator [OK]. Strategy done: route to risk-manager. Risk done: confirm [RISK-OK] for live |
+| Phase advance | Phase complete | READ agents → WRITE task_plan.md + progress.md + gate status → THEN advance. See Phase Advancement in SKILL.md |
 | Context overflow | Agent reports long context | Progress saved in files, resume agent or spawn successor |
 | CI gate | Any code change | Run CI script (scripts/run_ci.py), all checks PASS before submitting for review |
 | Guardrail capture | 3-Strike resolved or validator [BLOCK] fixed | Ask: will this recur? If yes → append to Known Pitfalls; if universal → [TEAM-PROTOCOL] |
