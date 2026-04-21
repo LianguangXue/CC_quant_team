@@ -7,6 +7,21 @@ Versioning follows SemVer-ish: patch = typos/wording, minor = new check or role 
 
 ---
 
+## [0.1.4] — 2026-04-20
+
+### Added
+- **Prerequisites section** in `SKILL.md` and `README.md` documenting the dependency on Claude Code's experimental agent teams feature:
+  - Claude Code v2.1.32+ required
+  - Enable flow via `~/.claude/settings.json` (`"env": {"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"}`)
+  - How to verify tools are available
+  - Runtime check: if `TeamCreate` is unavailable, team-lead must halt setup and tell the user how to enable — do not fall back to standalone `Agent()` calls
+- Links to official docs and enable-guide references
+
+### Fixed
+- Previous versions assumed `TeamCreate` / `TaskCreate` / `TaskUpdate` / `TaskList` / `SendMessage` were universally available. These are only present when the experimental feature is enabled; without it, all dispatch instructions in the skill reference missing tools.
+
+---
+
 ## [0.1.3] — 2026-04-16
 
 ### Added

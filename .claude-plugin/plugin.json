@@ -1,7 +1,7 @@
 {
   "name": "cc-quant-team",
   "description": "Multi-agent team orchestration for quantitative research and trading projects. Specialized fork of CCteam-creator with 11 quant roles (HFT/LFT researchers, model/strategy researchers, algorithm engineer, data engineer, code/research validators, risk manager), pre-filled quant invariants (lookahead/survivorship/leakage detection), and quant-specific golden rules (timestamp monotonicity, unseeded randomness, type annotation imports).",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": {
     "name": "Lianguang Xue"
   },

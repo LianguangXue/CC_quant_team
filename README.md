@@ -4,7 +4,7 @@ Multi-agent team orchestration for quantitative research and trading projects in
 
 Quant-specialized fork of [CCteam-creator](https://github.com/jessepwj/CCteam-creator) by jessepwj. Keeps the core harness (file-based planning, team-lead control plane, 3-Strike escalation, team-snapshot fast-resume), but replaces web-development roles and checks with quant-specific ones.
 
-**Current version**: 0.1.3
+**Current version**: 0.1.4
 
 ## What it does
 
@@ -57,6 +57,34 @@ Both team-lead and spawned agents have mandatory progress-tracking protocols.
 3. Update `docs/index.md` if any docs/ file changed
 
 This means that when Phase 3 starts (say, model-researcher consuming Phase 2 features), everything they need is in *one place* — root findings.md + docs/ — instead of scattered across 5 agent directories.
+
+## Prerequisites
+
+This skill depends on Claude Code's **experimental agent teams** feature — the primary dispatch tools (`TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`) only exist when this feature is enabled. Without it, the skill's instructions reference tools Claude Code cannot call.
+
+**Requirements**:
+- Claude Code **v2.1.32 or later** (check: `claude --version`)
+- Environment variable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+
+**Enable (recommended) via `~/.claude/settings.json`**:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Then restart Claude Code. Team tools load only at session start.
+
+**Verify**: after restart, ask Claude "Is TeamCreate available?" — it should say yes.
+
+**Known experimental limitations**: no session resumption with in-process teammates; task status can occasionally lag; shutdown can be slow.
+
+Refs:
+- [Orchestrate teams of Claude Code sessions — official docs](https://code.claude.com/docs/en/agent-teams)
+- [Enable Team Mode in Claude Code — Scott Spence](https://scottspence.com/posts/enable-team-mode-in-claude-code)
 
 ## Installation
 

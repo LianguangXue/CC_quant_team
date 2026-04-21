@@ -26,6 +26,37 @@ feature engineering, C++/Python performance work, and risk management.
 
 ## Prerequisites
 
+### 1. Claude Code with Experimental Agent Teams Enabled
+
+This skill uses native team-dispatch tools (`TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`) that are part of Claude Code's **experimental agent teams feature**. Without it, the dispatch instructions in this skill won't work.
+
+**Requirements**:
+- Claude Code **v2.1.32 or later** (check: `claude --version`)
+- Environment variable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` set at session start
+
+**Enable via `~/.claude/settings.json`** (recommended, persists across sessions):
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+**Or shell env** (per-session):
+
+```bash
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+claude
+```
+
+Either way, you must **restart Claude Code** — team tools load only at startup. After restart, verify by asking: "Is TeamCreate available?" — if yes, you're good.
+
+**Known limitations** (experimental status): no session resumption with in-process teammates, task status can lag, shutdown can be slow.
+
+### 2. Read Reference Files Before Step 1
+
 **Before starting Step 1**, you (team-lead) MUST read all reference files directly into your own context:
 
 ```
@@ -39,6 +70,19 @@ Read references/quant-review-dimensions.md
 Do NOT delegate this to a subagent (Explore, general-purpose, etc.). Subagents return
 summaries, losing critical detail — you need the full templates and onboarding prompts
 to generate files and spawn agents correctly.
+
+### 3. Check Team Tool Availability (Runtime)
+
+If the team tools are NOT available (e.g., user forgot to enable the env var, or Claude Code is outdated), DO NOT proceed with Step 1. Instead, tell the user:
+
+> I need Claude Code's experimental agent teams feature enabled to set up the team. Please:
+> 1. Add `"env": {"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"}` to `~/.claude/settings.json`
+> 2. Restart Claude Code
+> 3. Re-invoke /quant-team-creator
+>
+> See the plugin's [README](https://github.com/LianguangXue/CC_quant_team#prerequisites) for details.
+
+Do not try to simulate the team with standalone `Agent()` calls — that bypasses the file-based coordination this skill depends on.
 
 ## Process
 
